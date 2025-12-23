@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'home_screens.dart';
+import 'package:ppb_koneksibilitas/views/home_screens.dart';
 
 class InformasiLainPage extends StatefulWidget {
   const InformasiLainPage({super.key});
