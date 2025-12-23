@@ -1,8 +1,8 @@
-// ignore_for_file: unused_import
-//File yang di butuhin buat pindah page di import di sini
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
-import 'login_screens.dart'; 
-import 'home_screens.dart';
+import 'login_screens.dart';
+import 'package:ppb_koneksibilitas/services/auth_service.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -12,258 +12,204 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
-  bool obscureText = true;
-  bool isChecked = false;
-
   final firstNameController = TextEditingController();
   final lastNameController = TextEditingController();
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
+
+  String? selectedGender;
+  bool obscureText = true;
+  bool isChecked = false;
+  bool isLoading = false;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const SizedBox(height: 80),
-              Image.asset('assets/register.png', height: 150),//logo yg muncul tiap screen
-              const SizedBox(height: 20),
-              const Text(
-                'KONEKSIBILITAS',
-                style: TextStyle(
-                  color: Colors.blue,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 20,
-                ),
-              ),
-              const Text('Masuk sebagai pekerja'),
-              const SizedBox(height: 30),
+        child: Column(
+          children: [
+            const SizedBox(height: 80),
+            Image.asset('assets/register.png', height: 150),
+            const SizedBox(height: 20),
 
-              // Text Field Nama Depan
-              TextField(
-                controller: firstNameController,
-                decoration: InputDecoration(
-                  hintText: 'Nama Depan',
-                  prefixIcon: const Icon(Icons.person_outline),
-                  filled: true,
-                  fillColor: Colors.grey.shade100,
-                  contentPadding: const EdgeInsets.symmetric(
-                    vertical: 18,
-                    horizontal: 15,
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(15),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
+            const Text(
+              'KONEKSIBILITAS',
+              style: TextStyle(
+                color: Colors.blue,
+                fontWeight: FontWeight.bold,
+                fontSize: 20,
               ),
-              const SizedBox(height: 15),
+            ),
+            const Text('Daftar sebagai pekerja'),
+            const SizedBox(height: 30),
 
-              // Text Field Nama Belakang
-              TextField(
-                controller: lastNameController,
-                decoration: InputDecoration(
-                  hintText: 'Nama Belakang',
-                  prefixIcon: const Icon(Icons.person_outline),
-                  filled: true,
-                  fillColor: Colors.grey.shade100,
-                  contentPadding: const EdgeInsets.symmetric(
-                    vertical: 18,
-                    horizontal: 15,
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(15),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 15),
+            _input(firstNameController, 'Nama Depan', Icons.person),
+            const SizedBox(height: 15),
+            _input(lastNameController, 'Nama Belakang', Icons.person),
+            const SizedBox(height: 15),
+            _input(emailController, 'Email', Icons.email),
+            const SizedBox(height: 15),
 
-              // Text Field Email
-              TextField(
-                controller: emailController,
-                decoration: InputDecoration(
-                  hintText: 'Email',
-                  prefixIcon: const Icon(Icons.email_outlined),
-                  filled: true,
-                  fillColor: Colors.grey.shade100,
-                  contentPadding: const EdgeInsets.symmetric(
-                    vertical: 18,
-                    horizontal: 15,
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(15),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 15),
-
-              // Text Field Password
-              TextField(
-                controller: passwordController,
-                obscureText: obscureText,
-                decoration: InputDecoration(
-                  hintText: 'Password',
-                  prefixIcon: const Icon(Icons.lock_outline),//icon mata kunci
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      obscureText
-                          ? Icons.visibility_off_outlined
-                          : Icons.visibility_outlined,
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        obscureText = !obscureText; // bagian ubah visibility
-                      });
-                    },
-                  ),
-                  filled: true,
-                  fillColor: Colors.grey.shade100,
-                  contentPadding: const EdgeInsets.symmetric(
-                    vertical: 18,
-                    horizontal: 15,
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(15),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 10),
-
-              // Dropdown Jenis Kelamin
-              DropdownButtonFormField<String>(
-                decoration: InputDecoration(
-                  hintText: 'Jenis Kelamin',
-                  prefixIcon: const Icon(Icons.person),
-                  filled: true,
-                  fillColor: Colors.grey.shade100,
-                  contentPadding: const EdgeInsets.symmetric(
-                    vertical: 18,
-                    horizontal: 15,
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(15),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
-                items: const [
-                  DropdownMenuItem(
-                    value: 'Laki-laki',
-                    child: Text('Laki-laki'),
-                  ),
-                  DropdownMenuItem(
-                    value: 'Perempuan',
-                    child: Text('Perempuan'),
-                  ),
-                ],
-                onChanged: (value) {},
-              ),
-              const SizedBox(height: 20),
-
-              Row(// Checkbox persetujuan
-                children: [
-                  Transform.scale(
-                    scale: 1.2,
-                    child: Checkbox(
-                      shape: const CircleBorder(),
-                      value: isChecked,
-                      activeColor: Colors.green,
-                      onChanged: (value) {
-                        setState(() {
-                          isChecked = value ?? false;
-                        });
-                      },
-                    ),
-                  ),
-                  const SizedBox(width: 6),
-                  const Expanded(
-                    child: Text(
-                      'Dengan lanjut, anda setuju pada ketentuan, privasi, dan cookie koneksibilitas',
-                      style: TextStyle(fontSize: 12),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-
-              // Tombol Sign Up
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
-                    ),
-                    padding: const EdgeInsets.symmetric(vertical: 15),
+            TextField(
+              controller: passwordController,
+              obscureText: obscureText,
+              decoration: _decoration(
+                'Password',
+                Icons.lock,
+                suffix: IconButton(
+                  icon: Icon(
+                    obscureText
+                        ? Icons.visibility_off
+                        : Icons.visibility,
                   ),
                   onPressed: () {
-                    if (isChecked) {
-                      // Tampilkan SnackBar warna hijau
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          backgroundColor: Colors.green,
-                          content: const Text(
-                            'Login berhasil',
-                            style: TextStyle(color: Colors.white),
-                          ),
-                        ),
-                      );
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => HomeScreens(),// mengarahkanke halaman home screen
-                          ),
-                      );
-                    } else {
-                      // Jika belum centang persetujuan
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text(
-                            'Harap centang persetujuan terlebih dahulu',
-                          ),
-                        ),
-                      );
-                    }
+                    setState(() => obscureText = !obscureText);
                   },
-                  child: const Text(
-                    'Sign Up',
-                    style: TextStyle(color: Colors.white),
-                  ),
                 ),
               ),
-              const SizedBox(height: 10),
+            ),
+            const SizedBox(height: 15),
 
-              // Tombol Sign In
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton(
-                  style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: Colors.blue),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
-                    ),
-                    padding: const EdgeInsets.symmetric(vertical: 15),
-                  ),
-                  onPressed: () {
-                    Navigator.pop(context);
+            DropdownButtonFormField<String>(
+              value: selectedGender,
+              decoration: _decoration('Jenis Kelamin', Icons.person),
+              items: const [
+                DropdownMenuItem(
+                  value: 'Laki-laki',
+                  child: Text('Laki-laki'),
+                ),
+                DropdownMenuItem(
+                  value: 'Perempuan',
+                  child: Text('Perempuan'),
+                ),
+              ],
+              onChanged: (value) {
+                setState(() => selectedGender = value);
+              },
+            ),
+            const SizedBox(height: 20),
+
+            Row(
+              children: [
+                Checkbox(
+                  value: isChecked,
+                  onChanged: (value) {
+                    setState(() => isChecked = value ?? false);
                   },
-                  child: const Text(
-                    'Sign In',
-                    style: TextStyle(color: Colors.blue),
+                ),
+                const Expanded(
+                  child: Text(
+                    'Dengan lanjut, anda setuju pada ketentuan dan privasi',
+                    style: TextStyle(fontSize: 12),
                   ),
                 ),
+              ],
+            ),
+            const SizedBox(height: 20),
+
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: isLoading ? null : _handleRegister,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 15),
+                ),
+                child: isLoading
+                    ? const CircularProgressIndicator(color: Colors.white)
+                    : const Text('Sign Up'),
               ),
-            ],
-          ),
+            ),
+
+            const SizedBox(height: 10),
+
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Sudah punya akun? Login'),
+            ),
+          ],
         ),
       ),
+    );
+  }
+
+  // ================= LOGIC REGISTER =================
+  Future<void> _handleRegister() async {
+    if (!isChecked || selectedGender == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Lengkapi semua data')),
+      );
+      return;
+    }
+
+    setState(() => isLoading = true);
+
+    try {
+      final success = await AuthService.register(
+        email: emailController.text,
+        namaDepan: firstNameController.text,
+        namaBelakang: lastNameController.text,
+        jenisKelamin: selectedGender!,
+        password: passwordController.text,
+      );
+
+      setState(() => isLoading = false);
+
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            backgroundColor: Colors.green,
+            content: Text('Registrasi berhasil, silakan login'),
+          ),
+        );
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const LoginScreen()),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            backgroundColor: Colors.red,
+            content: Text('Registrasi gagal'),
+          ),
+        );
+      }
+    } catch (e) {
+      setState(() => isLoading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: Colors.red,
+          content: Text(e.toString()),
+        ),
+      );
+    }
+  }
+
+  InputDecoration _decoration(String hint, IconData icon,
+      {Widget? suffix}) {
+    return InputDecoration(
+      hintText: hint,
+      prefixIcon: Icon(icon),
+      suffixIcon: suffix,
+      filled: true,
+      fillColor: Colors.grey.shade100,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(15),
+        borderSide: BorderSide.none,
+      ),
+    );
+  }
+
+  Widget _input(
+      TextEditingController c, String hint, IconData icon) {
+    return TextField(
+      controller: c,
+      decoration: _decoration(hint, icon),
     );
   }
 }

@@ -1,8 +1,11 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:flutter/material.dart';
-import 'register_screens.dart'; // Import file register
-import 'home_screens.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import 'register_screens.dart';
+import 'package:ppb_koneksibilitas/views/home_screens.dart';
+import 'package:ppb_koneksibilitas/services/auth_service.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -14,8 +17,10 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
-  bool isChecked = false; // status checkbox
-  bool _obscureText = true; // nilai awal: password tersembunyi
+
+  bool isChecked = false;
+  bool _obscureText = true;
+  bool _isLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -41,28 +46,23 @@ class _LoginScreenState extends State<LoginScreen> {
               const Text('Masuk sebagai pekerja'),
               const SizedBox(height: 30),
 
-              // Bagian Email
+              // EMAIL
               TextField(
                 controller: emailController,
                 decoration: InputDecoration(
                   hintText: 'Email',
                   prefixIcon: const Icon(Icons.email_outlined),
                   filled: true,
-                  fillColor:
-                      Colors.grey.shade100, // warna abu muda di background
-                  contentPadding: const EdgeInsets.symmetric(
-                    vertical: 18,
-                    horizontal: 15,
-                  ),
+                  fillColor: Colors.grey.shade100,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(15),
-                    borderSide: BorderSide.none, // tanpa garis tepi
+                    borderSide: BorderSide.none,
                   ),
                 ),
               ),
               const SizedBox(height: 15),
 
-              // Bagian Password
+              // PASSWORD
               TextField(
                 controller: passwordController,
                 obscureText: _obscureText,
@@ -76,17 +76,11 @@ class _LoginScreenState extends State<LoginScreen> {
                           : Icons.visibility_outlined,
                     ),
                     onPressed: () {
-                      setState(() {
-                        _obscureText = !_obscureText; // ubah visibility
-                      });
+                      setState(() => _obscureText = !_obscureText);
                     },
                   ),
                   filled: true,
                   fillColor: Colors.grey.shade100,
-                  contentPadding: const EdgeInsets.symmetric(
-                    vertical: 18,
-                    horizontal: 15,
-                  ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(15),
                     borderSide: BorderSide.none,
@@ -95,36 +89,15 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const SizedBox(height: 10),
 
-              //Bagian Teks "Lupa password?"
-              Align(
-                alignment: Alignment.centerRight,
-                child: TextButton(
-                  onPressed: () {},
-                  style: TextButton.styleFrom(padding: EdgeInsets.zero),
-                  child: const Text(
-                    'Lupa password?',
-                    style: TextStyle(color: Colors.blue, fontSize: 10),
-                  ),
-                ),
-              ),
-
-              // Bagian Checkbox
+              // CHECKBOX
               Row(
                 children: [
-                  Transform.scale(
-                    scale: 1.2,
-                    child: Checkbox(
-                      shape: const CircleBorder(), // biar checkbox nya bulat
-                      value: isChecked,
-                      activeColor: Colors.green,
-                      onChanged: (value) {
-                        setState(() {
-                          isChecked = value ?? false; //disini null safety
-                        });
-                      },
-                    ),
+                  Checkbox(
+                    value: isChecked,
+                    onChanged: (value) {
+                      setState(() => isChecked = value ?? false);
+                    },
                   ),
-                  const SizedBox(width: 6),
                   const Expanded(
                     child: Text(
                       'Dengan lanjut, anda setuju pada ketentuan, privasi, dan cookie koneksibilitas',
@@ -135,10 +108,11 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const SizedBox(height: 20),
 
-              // Bagian Tombol Sign In
+              // BUTTON LOGIN
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
+                  onPressed: _isLoading ? null : _handleLogin,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blue,
                     shape: RoundedRectangleBorder(
@@ -146,78 +120,30 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     padding: const EdgeInsets.symmetric(vertical: 15),
                   ),
-                  onPressed: () {
-                    if (isChecked) {
-                      // Tampilkan SnackBar warna hijau
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          backgroundColor: Colors.green,
-                          content: const Text(
-                            'Login berhasil',
-                            style: TextStyle(color: Colors.white),
-                          ),
+                  child: _isLoading
+                      ? const CircularProgressIndicator(color: Colors.white)
+                      : const Text(
+                          'Sign In',
+                          style: TextStyle(color: Colors.white),
                         ),
-                      );
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(builder: (context) => HomeScreens()),
-                      );
-                    } else {
-                      // Jika belum centang persetujuan
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text(
-                            'Harap centang persetujuan terlebih dahulu',
-                          ),
-                        ),
-                      );
-                    }
-                  },
-                  child: const Text(
-                    'Sign In',
-                    style: TextStyle(color: Colors.white),
-                  ),
                 ),
               ),
+
               const SizedBox(height: 10),
 
-              // Bagian Tombol Sign Up
+              // REGISTER
               SizedBox(
                 width: double.infinity,
                 child: OutlinedButton(
-                  style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: Colors.blue),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
-                    ),
-                    padding: const EdgeInsets.symmetric(vertical: 15),
-                  ),
                   onPressed: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => RegisterScreen()),
+                      MaterialPageRoute(
+                        builder: (_) => const RegisterScreen(),
+                      ),
                     );
                   },
-                  child: const Text(
-                    'Sign Up',
-                    style: TextStyle(color: Colors.blue),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
-              RichText(
-                text: const TextSpan(
-                  style: TextStyle(fontSize: 12, fontFamily: 'Inter'),
-                  children: [
-                    TextSpan(
-                      text: 'Kamu ingin masuk sebagai ',
-                      style: TextStyle(color: Colors.black),
-                    ),
-                    TextSpan(
-                      text: 'Penyedia Kerja?',
-                      style: TextStyle(color: Colors.blue),
-                    ),
-                  ],
+                  child: const Text('Sign Up'),
                 ),
               ),
             ],
@@ -225,5 +151,63 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
       ),
     );
+  }
+
+  // ================= LOGIN LOGIC (FIXED) =================
+  Future<void> _handleLogin() async {
+    if (!isChecked) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Harap setujui ketentuan terlebih dahulu'),
+        ),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      final success = await AuthService.login(
+        email: emailController.text.trim(),
+        password: passwordController.text,
+      );
+
+      setState(() => _isLoading = false);
+
+      if (success) {
+        /// 🔑 AMBIL USERNAME DARI INPUT EMAIL
+        final email = emailController.text.trim();
+        final username = email.contains('@')
+            ? email.split('@')[0]
+            : email;
+
+        /// 🔑 SIMPAN KE SHARED PREFERENCES
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('user_name', username);
+
+        /// DEBUG
+        debugPrint('USERNAME DISIMPAN: $username');
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const HomeScreens()),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            backgroundColor: Colors.red,
+            content: Text('Email atau password salah'),
+          ),
+        );
+      }
+    } catch (e) {
+      setState(() => _isLoading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: Colors.red,
+          content: Text(e.toString()),
+        ),
+      );
+    }
   }
 }
