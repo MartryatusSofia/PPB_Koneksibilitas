@@ -1,17 +1,12 @@
 import 'package:flutter/material.dart';
-import 'lamaran_data_pribadi.dart'; 
+import '../services/lowongan_service.dart';
+import 'package:flutter_html/flutter_html.dart';
+import 'lamaran_data_pribadi.dart';
 
 class JobDetailPage extends StatelessWidget {
-  final String title;
-  final String company;
-  final String logo;
+  final int lowonganId;
 
-  const JobDetailPage({
-    super.key,
-    required this.title,
-    required this.company,
-    required this.logo,
-  });
+  const JobDetailPage({super.key, required this.lowonganId});
 
   @override
   Widget build(BuildContext context) {
@@ -28,99 +23,129 @@ class JobDetailPage extends StatelessWidget {
         backgroundColor: Colors.white,
         elevation: 0,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
+      body: FutureBuilder<Map<String, dynamic>?>(
+        future: LowonganService.fetchDetailLowongan(lowonganId),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (snapshot.hasError) {
+            return const Center(child: Text('Gagal memuat detail lowongan'));
+          }
+
+          if (!snapshot.hasData || snapshot.data == null) {
+            return const Center(child: Text('Data tidak tersedia'));
+          }
+
+          final Map<String, dynamic> data = snapshot.data!;
+
+          final title = data['posisi'] ?? 'Posisi tidak tersedia';
+
+          final company =
+              data['perusahaan']?['nama'] ?? 'Perusahaan tidak diketahui';
+
+          final kategori =
+              data['kategori_pekerjaan'] ?? 'Kategori tidak tersedia';
+
+          final logo = 'https://img.icons8.com/fluency/48/company.png';
+
+          final persyaratan =
+              data['persyaratan'] ?? '<p>Belum ada persyaratan</p>';
+
+          return Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                CircleAvatar(backgroundImage: NetworkImage(logo), radius: 28),
-                const SizedBox(width: 12),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                Row(
                   children: [
-                    Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                    Text(company, style: const TextStyle(color: Colors.grey)),
+                    CircleAvatar(
+                      backgroundImage: NetworkImage(logo),
+                      radius: 28,
+                    ),
+                    const SizedBox(width: 12),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          company,
+                          style: const TextStyle(color: Colors.grey),
+                        ),
+                      ],
+                    ),
+                    const Spacer(),
+                    const Icon(Icons.bookmark_border),
                   ],
                 ),
+                const SizedBox(height: 20),
+
+                const Text(
+                  "Lowongan tersedia",
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                Text(
+                  title,
+                  style: const TextStyle(fontWeight: FontWeight.w500),
+                ),
+
+                const SizedBox(height: 12),
+
+                const Text(
+                  "Kategori Pekerjaan",
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                Text(
+                  kategori,
+                  style: const TextStyle(fontWeight: FontWeight.w500),
+                ),
+
+                const SizedBox(height: 16),
+                const Text(
+                  "Persyaratan Lowongan",
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+
+                const SizedBox(height: 4),
+                Html(data: persyaratan),
+
                 const Spacer(),
-                const Icon(Icons.bookmark_border),
-              ],
-            ),
-            const SizedBox(height: 20),
-            const Text("Lowongan tersedia", style: TextStyle(fontWeight: FontWeight.w500)),
-            const Text("Customer Support Specialist"),
-            const SizedBox(height: 16),
-            const Text("Status Lowongan Saat Ini",
-                style: TextStyle(fontWeight: FontWeight.w500)),
-            const Row(
-              children: [
-                Icon(Icons.people_outline, size: 18),
-                SizedBox(width: 4),
-                Text("8 Pendaftar"),
-              ],
-            ),
-            const SizedBox(height: 16),
-            const Text("Kebutuhan Dokumen",
-                style: TextStyle(fontWeight: FontWeight.w500)),
-            const SizedBox(height: 8),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
-                DocItem(text: "CV"),
-                DocItem(text: "Resume"),
-                DocItem(text: "Portofolio"),
-              ],
-            ),
-            const SizedBox(height: 16),
-            const Text("Persyaratan Lowongan",
-                style: TextStyle(fontWeight: FontWeight.w500)),
-            const SizedBox(height: 4),
-            const Text(
-              "FreshGraduate atau memiliki pengalaman minimal 1 tahun.\nSiap bekerja di bawah tekanan.",
-            ),
-            const Spacer(),
-            SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const DataPribadiPage(),
+                SizedBox(
+                  width: double.infinity,
+                  height: 50,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const DataPribadiPage(),
+                        ),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF3B82F6),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
                     ),
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Color(0xFF3B82F6),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
+                    child: const Text(
+                      "Lamar Pekerjaan",
+                      style: TextStyle(fontSize: 16),
+                    ),
                   ),
                 ),
-                child: const Text("Lamar Pekerjaan", style: TextStyle(fontSize: 16)),
-              ),
+              ],
             ),
-          ],
-        ),
+          );
+        },
       ),
-    );
-  }
-}
-
-class DocItem extends StatelessWidget {
-  final String text;
-  const DocItem({super.key, required this.text});
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        const Icon(Icons.circle, color: Colors.amber, size: 12),
-        const SizedBox(width: 8),
-        Text(text),
-      ],
     );
   }
 }

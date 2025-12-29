@@ -4,23 +4,27 @@ import 'job_detail_page.dart';
 class SavedJobsPage extends StatelessWidget {
   const SavedJobsPage({super.key});
 
-  final List<Map<String, String>> jobs = const [
+  final List<Map<String, dynamic>> jobs = const [
     {
+      'id': 1,
       'title': 'Admin Toko Online',
       'company': 'GlobalTrans Indo',
       'logo': 'https://img.icons8.com/color/48/000000/google-logo.png',
     },
     {
+      'id': 2,
       'title': 'Desain Grafis',
       'company': 'CV. Kreasi Warna',
       'logo': 'https://img.icons8.com/color/48/000000/adobe-illustrator.png',
     },
     {
+      'id': 3,
       'title': 'Data Entry Operator',
       'company': 'PT. Digital Nusantara',
       'logo': 'https://img.icons8.com/color/48/000000/database.png',
     },
     {
+      'id': 4,
       'title': 'Admin Sosial Media',
       'company': 'GlobalTrans Indo',
       'logo': 'https://img.icons8.com/color/48/000000/facebook-new.png',
@@ -41,10 +45,13 @@ class SavedJobsPage extends StatelessWidget {
             child: Center(
               child: Text(
                 "Edit",
-                style: TextStyle(color: Colors.blue, fontWeight: FontWeight.w500),
+                style: TextStyle(
+                  color: Colors.blue,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ),
-          )
+          ),
         ],
         backgroundColor: Colors.white,
         elevation: 0,
@@ -75,11 +82,7 @@ class SavedJobsPage extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => JobDetailPage(
-                        title: job['title']!,
-                        company: job['company']!,
-                        logo: job['logo']!,
-                      ),
+                      builder: (_) => JobDetailPage(lowonganId: job['id']),
                     ),
                   );
                 },
@@ -101,10 +104,19 @@ class SavedJobsPage extends StatelessWidget {
         unselectedItemColor: Colors.grey,
         showUnselectedLabels: true,
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home_outlined), label: "Home"),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home_outlined),
+            label: "Home",
+          ),
           BottomNavigationBarItem(icon: Icon(Icons.bookmark), label: "Simpan"),
-          BottomNavigationBarItem(icon: Icon(Icons.access_time), label: "Status"),
-          BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: "Akun"),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.access_time),
+            label: "Status",
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person_outline),
+            label: "Akun",
+          ),
         ],
       ),
     );
