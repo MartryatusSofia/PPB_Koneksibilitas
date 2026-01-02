@@ -5,6 +5,7 @@ class JobCard extends StatelessWidget {
   final String company;
   final String tag;
   final String logoUrl;
+  final VoidCallback? onTap;
 
   const JobCard({
     super.key,
@@ -12,13 +13,17 @@ class JobCard extends StatelessWidget {
     required this.company,
     required this.tag,
     required this.logoUrl,
+    this.onTap,
   });
 
-  @override
-  Widget build(BuildContext context) {
-    const primary = Color(0xFF2563EB);
+@override
+Widget build(BuildContext context) {
+  const primary = Color(0xFF2563EB);
 
-    return Container(
+  return InkWell(
+    onTap: onTap,
+    borderRadius: BorderRadius.circular(16),
+    child: Container(
       margin: const EdgeInsets.only(bottom: 14),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -63,7 +68,7 @@ class JobCard extends StatelessWidget {
             ),
           ),
           ElevatedButton(
-            onPressed: () {},
+            onPressed: onTap,
             style: ElevatedButton.styleFrom(
               backgroundColor: primary,
               foregroundColor: Colors.white,
@@ -72,9 +77,10 @@ class JobCard extends StatelessWidget {
               ),
             ),
             child: const Text('Info'),
-          )
+          ),
         ],
       ),
-    );
-  }
+    ),
+  );
+}
 }

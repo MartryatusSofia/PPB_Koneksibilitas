@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'job_detail_page.dart';
+import '../widgets/app_bottom_nav.dart';
 
 class SavedJobsPage extends StatelessWidget {
   const SavedJobsPage({super.key});
@@ -88,37 +89,23 @@ class SavedJobsPage extends StatelessWidget {
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF3B82F6),
+                  foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20),
                   ),
                 ),
-                child: const Text("Lamar"),
+                child: const Text(
+                "Lamar",
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
               ),
             ),
           );
         },
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 1,
-        selectedItemColor: Colors.blue,
-        unselectedItemColor: Colors.grey,
-        showUnselectedLabels: true,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home_outlined),
-            label: "Home",
-          ),
-          BottomNavigationBarItem(icon: Icon(Icons.bookmark), label: "Simpan"),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.access_time),
-            label: "Status",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline),
-            label: "Akun",
-          ),
-        ],
-      ),
+      bottomNavigationBar: const AppBottomNav(currentIndex: 1),
     );
   }
 }
