@@ -11,8 +11,11 @@ class ApiService {
 
   static Map<String, String> _defaultHeaders({String? token}) {
     return {
+      //nana note:
+      //meaning : only accept JSON 
       'Accept': 'application/json',
       if (token != null) 'Authorization': 'Bearer $token',
+      //token use for identify which role is login rn 
     };
   }
 
@@ -21,12 +24,14 @@ class ApiService {
     String? token,
     Map<String, String>? query,
   }) async {
+    //nana note : combine between baseUrl + endpointnya, endpoint are build in laravel 
     final uri = Uri.parse('$baseUrl/$endpoint').replace(queryParameters: query);
     final response = await http.get(uri, headers: _defaultHeaders(token: token));
     return _handleJson(response);
   }
 
   static Future<Map<String, dynamic>> post(
+    //nana note : diff between get is post need body to send data
     String endpoint, {
     Map<String, dynamic>? body,
     String? token,
@@ -35,8 +40,10 @@ class ApiService {
       Uri.parse('$baseUrl/$endpoint'),
       headers: {
         ..._defaultHeaders(token: token),
+        //inform content type is using JSON
         'Content-Type': 'application/json',
       },
+      //JSONEncode for compile map into string json.
       body: body != null ? jsonEncode(body) : null,
     );
     return _handleJson(response);
