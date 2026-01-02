@@ -31,7 +31,7 @@ class MyApp extends StatelessWidget {
       // Daftar route
       routes: {
         '/home': (context) => const HomeScreens(),
-        '/saved-jobs': (context) => const SavedJobPage(),
+        '/saved-jobs': (context) => const SavedJobsPage(),
         '/register': (context) => const RegisterScreen(),        
         '/profile': (context) => const ProfilePage(),
         '/status-lamaran': (context) => const StatusLamaranPage(),

@@ -5,7 +5,7 @@ class Lowongan {
   final String kategori;
   final String? persyaratan;
   final String? createdAt;
-  final String? approvedAt;
+  final String? status;
 
   Lowongan({
     required this.id,
@@ -14,7 +14,7 @@ class Lowongan {
     required this.kategori,
     this.persyaratan,
     this.createdAt,
-    this.approvedAt,
+    this.status,
   });
 
   factory Lowongan.fromJson(Map<String, dynamic> json) {
@@ -26,7 +26,7 @@ class Lowongan {
       kategori: json['kategori_pekerjaan'] ?? '-',
       persyaratan: json['persyaratan'],
       createdAt: json['created_at'],
-      approvedAt: json['approved_at'],
+      status: json['status'],
     );
   }
 

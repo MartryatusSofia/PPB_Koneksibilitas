@@ -1,40 +1,12 @@
 import 'package:flutter/material.dart';
+import '../services/lowongan_service.dart';
+import 'package:flutter_html/flutter_html.dart';
 import 'lamaran_data_pribadi.dart';
 
-class JobDetailPage extends StatefulWidget {
+class JobDetailPage extends StatelessWidget {
   final int lowonganId;
-  final String title;
-  final String company;
-  final String logo;
 
-  const JobDetailPage({
-    super.key,
-    required this.lowonganId,
-    required this.title,
-    required this.company,
-    required this.logo,
-  });
-
-  @override
-  State<JobDetailPage> createState() => _JobDetailPageState();
-}
-
-class _JobDetailPageState extends State<JobDetailPage> {
-  bool _isSaved = false;
-
-  void _toggleSave() {
-    setState(() {
-      _isSaved = !_isSaved;
-    });
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          _isSaved ? 'Lowongan disimpan' : 'Lowongan dihapus',
-        ),
-      ),
-    );
-  }
+  const JobDetailPage({super.key, required this.lowonganId});
 
   @override
   Widget build(BuildContext context) {
@@ -50,149 +22,130 @@ class _JobDetailPageState extends State<JobDetailPage> {
         ),
         backgroundColor: Colors.white,
         elevation: 0,
-        actions: [
-          IconButton(
-            icon: Icon(
-              _isSaved ? Icons.bookmark : Icons.bookmark_border,
-              color: Colors.black,
-            ),
-            onPressed: _toggleSave,
-          ),
-        ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // ===== HEADER =====
-            Row(
-              children: [
-                CircleAvatar(
-                  backgroundImage: NetworkImage(widget.logo),
-                  radius: 28,
-                ),
-                const SizedBox(width: 12),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      widget.title,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Text(
-                      widget.company,
-                      style: const TextStyle(color: Colors.grey),
-                    ),
-                  ],
-                ),
-              ],
-            ),
+      body: FutureBuilder<Map<String, dynamic>?>(
+        future: LowonganService.fetchDetailLowongan(lowonganId),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-            const SizedBox(height: 20),
+          if (snapshot.hasError) {
+            return const Center(child: Text('Gagal memuat detail lowongan'));
+          }
 
-            const Text(
-              "Lowongan tersedia",
-              style: TextStyle(fontWeight: FontWeight.w500),
-            ),
-            const Text("Customer Support Specialist"),
+          if (!snapshot.hasData || snapshot.data == null) {
+            return const Center(child: Text('Data tidak tersedia'));
+          }
 
-            const SizedBox(height: 16),
+          final Map<String, dynamic> data = snapshot.data!;
 
-            const Text(
-              "Status Lowongan Saat Ini",
-              style: TextStyle(fontWeight: FontWeight.w500),
-            ),
-            const Row(
-              children: [
-                Icon(Icons.people_outline, size: 18),
-                SizedBox(width: 4),
-                Text("8 Pendaftar"),
-              ],
-            ),
+          final title = data['posisi'] ?? 'Posisi tidak tersedia';
 
-            const SizedBox(height: 16),
+          final company =
+              data['perusahaan']?['nama'] ?? 'Perusahaan tidak diketahui';
 
-            const Text(
-              "Kebutuhan Dokumen",
-              style: TextStyle(fontWeight: FontWeight.w500),
-            ),
-            const SizedBox(height: 8),
-            const Column(
+          final kategori =
+              data['kategori_pekerjaan'] ?? 'Kategori tidak tersedia';
+
+          final logo = 'https://img.icons8.com/fluency/48/company.png';
+
+          final persyaratan =
+              data['persyaratan'] ?? '<p>Belum ada persyaratan</p>';
+
+          return Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                DocItem(text: "CV"),
-                DocItem(text: "Resume"),
-                DocItem(text: "Portofolio"),
+                Row(
+                  children: [
+                    CircleAvatar(
+                      backgroundImage: NetworkImage(logo),
+                      radius: 28,
+                    ),
+                    const SizedBox(width: 12),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          company,
+                          style: const TextStyle(color: Colors.grey),
+                        ),
+                      ],
+                    ),
+                    const Spacer(),
+                    const Icon(Icons.bookmark_border),
+                  ],
+                ),
+                const SizedBox(height: 20),
+
+                const Text(
+                  "Lowongan tersedia",
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                Text(
+                  title,
+                  style: const TextStyle(fontWeight: FontWeight.w500),
+                ),
+
+                const SizedBox(height: 12),
+
+                const Text(
+                  "Kategori Pekerjaan",
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                Text(
+                  kategori,
+                  style: const TextStyle(fontWeight: FontWeight.w500),
+                ),
+
+                const SizedBox(height: 16),
+                const Text(
+                  "Persyaratan Lowongan",
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+
+                const SizedBox(height: 4),
+                Html(data: persyaratan),
+
+                const Spacer(),
+                SizedBox(
+                  width: double.infinity,
+                  height: 50,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const DataPribadiPage(),
+                        ),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF3B82F6),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    child: const Text(
+                      "Lamar Pekerjaan",
+                      style: TextStyle(fontSize: 16),
+                    ),
+                  ),
+                ),
               ],
             ),
-
-            const SizedBox(height: 16),
-
-            const Text(
-              "Persyaratan Lowongan",
-              style: TextStyle(fontWeight: FontWeight.w500),
-            ),
-            const SizedBox(height: 4),
-            const Text(
-              "Fresh Graduate atau memiliki pengalaman minimal 1 tahun.\n"
-              "Siap bekerja di bawah tekanan.",
-            ),
-
-            const Spacer(),
-
-            // ===== BUTTON LAMAR =====
-            SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const DataPribadiPage(),
-                    ),
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF3B82F6),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-                child: const Text(
-                  "Lamar Pekerjaan",
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.white, // ✅ teks putih
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
+          );
+        },
       ),
-    );
-  }
-}
-
-// ===== DOC ITEM =====
-class DocItem extends StatelessWidget {
-  final String text;
-  const DocItem({super.key, required this.text});
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        const Icon(Icons.circle, color: Colors.amber, size: 12),
-        const SizedBox(width: 8),
-        Text(text),
-      ],
     );
   }
 }
