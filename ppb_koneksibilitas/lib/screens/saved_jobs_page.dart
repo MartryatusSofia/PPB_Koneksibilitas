@@ -1,111 +1,99 @@
 import 'package:flutter/material.dart';
+
+import '../services/saved_lowongan_service.dart';
+import '../controllers/lowongan_controller.dart';
+import '../models/lowongan_model.dart';
+import '../widgets/app_bottom_nav.dart';
 import 'job_detail_page.dart';
 
-class SavedJobsPage extends StatelessWidget {
-  const SavedJobsPage({super.key});
+class SavedJobPage extends StatefulWidget {
+  const SavedJobPage({super.key});
 
-  final List<Map<String, String>> jobs = const [
-    {
-      'title': 'Admin Toko Online',
-      'company': 'GlobalTrans Indo',
-      'logo': 'https://img.icons8.com/color/48/000000/google-logo.png',
-    },
-    {
-      'title': 'Desain Grafis',
-      'company': 'CV. Kreasi Warna',
-      'logo': 'https://img.icons8.com/color/48/000000/adobe-illustrator.png',
-    },
-    {
-      'title': 'Data Entry Operator',
-      'company': 'PT. Digital Nusantara',
-      'logo': 'https://img.icons8.com/color/48/000000/database.png',
-    },
-    {
-      'title': 'Admin Sosial Media',
-      'company': 'GlobalTrans Indo',
-      'logo': 'https://img.icons8.com/color/48/000000/facebook-new.png',
-    },
-  ];
+  @override
+  State<SavedJobPage> createState() => _SavedJobPageState();
+}
+
+class _SavedJobPageState extends State<SavedJobPage> {
+  final SavedLowonganService _savedService = SavedLowonganService();
+  final LowonganController _lowonganController = LowonganController();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          "Lowongan Tersimpan",
-          style: TextStyle(color: Colors.black),
-        ),
-        actions: const [
-          Padding(
-            padding: EdgeInsets.only(right: 16),
-            child: Center(
-              child: Text(
-                "Edit",
-                style: TextStyle(color: Colors.blue, fontWeight: FontWeight.w500),
-              ),
-            ),
-          )
-        ],
-        backgroundColor: Colors.white,
-        elevation: 0,
+        title: const Text('Lowongan Tersimpan'),
       ),
-      body: ListView.builder(
-        padding: const EdgeInsets.all(16),
-        itemCount: jobs.length,
-        itemBuilder: (context, index) {
-          final job = jobs[index];
-          return Card(
-            elevation: 2,
-            margin: const EdgeInsets.symmetric(vertical: 8),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: ListTile(
-              leading: CircleAvatar(
-                backgroundImage: NetworkImage(job['logo']!),
-                radius: 24,
-              ),
-              title: Text(
-                job['title']!,
-                style: const TextStyle(fontWeight: FontWeight.bold),
-              ),
-              subtitle: Text(job['company']!),
-              trailing: ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => JobDetailPage(
-                        title: job['title']!,
-                        company: job['company']!,
-                        logo: job['logo']!,
-                      ),
+      bottomNavigationBar: const AppBottomNav(currentIndex: 1),
+      body: FutureBuilder(
+        future: Future.wait([
+          _savedService.getSavedIds(),
+          _lowonganController.getLowongan(),
+        ]),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (!snapshot.hasData) {
+            return const Center(child: Text('Gagal memuat data'));
+          }
+
+          final savedIds = snapshot.data![0] as List<int>;
+          final allLowongan = snapshot.data![1] as List<Lowongan>;
+
+          final savedLowongan =
+              allLowongan.where((l) => savedIds.contains(l.id)).toList();
+
+          if (savedLowongan.isEmpty) {
+            return const Center(child: Text('Belum ada lowongan tersimpan'));
+          }
+
+          return ListView.builder(
+            padding: const EdgeInsets.all(16),
+            itemCount: savedLowongan.length,
+            itemBuilder: (context, index) {
+              final item = savedLowongan[index];
+
+              return Card(
+                elevation: 2,
+                margin: const EdgeInsets.symmetric(vertical: 8),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: ListTile(
+                  title: Text(
+                    item.posisi,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  subtitle: Text(item.perusahaan),
+                  trailing: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF3B82F6),
                     ),
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF3B82F6),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => JobDetailPage(
+                            lowonganId: item.id,
+                            title: item.posisi,
+                            company: item.perusahaan,
+                            logo:
+                                'https://img.icons8.com/fluency/48/company.png',
+                          ),
+                        ),
+                      );
+                    },
+                    child: const Text(
+                      'Lamar',
+                      style: TextStyle(color: Colors.white),
+                    ),
                   ),
                 ),
-                child: const Text("Lamar"),
-              ),
-            ),
+              );
+            },
           );
         },
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 1,
-        selectedItemColor: Colors.blue,
-        unselectedItemColor: Colors.grey,
-        showUnselectedLabels: true,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home_outlined), label: "Home"),
-          BottomNavigationBarItem(icon: Icon(Icons.bookmark), label: "Simpan"),
-          BottomNavigationBarItem(icon: Icon(Icons.access_time), label: "Status"),
-          BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: "Akun"),
-        ],
       ),
     );
   }

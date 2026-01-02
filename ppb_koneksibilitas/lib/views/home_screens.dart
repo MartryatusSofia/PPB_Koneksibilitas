@@ -10,6 +10,8 @@ import 'package:ppb_koneksibilitas/widgets/training_card.dart';
 
 import 'package:ppb_koneksibilitas/screens/search_screens.dart';
 
+import 'package:ppb_koneksibilitas/screens/job_detail_page.dart';
+
 class HomeScreens extends StatefulWidget {
   const HomeScreens({super.key});
 
@@ -144,9 +146,7 @@ class _HomeScreensState extends State<HomeScreens> {
                             ConnectionState.waiting) {
                           return const Padding(
                             padding: EdgeInsets.symmetric(vertical: 24),
-                            child: Center(
-                              child: CircularProgressIndicator(),
-                            ),
+                            child: Center(child: CircularProgressIndicator()),
                           );
                         }
 
@@ -157,9 +157,7 @@ class _HomeScreensState extends State<HomeScreens> {
                         final lowongan = snapshot.data!;
 
                         if (lowongan.isEmpty) {
-                          return const Text(
-                            'Belum ada lowongan yang tersedia',
-                          );
+                          return const Text('Belum ada lowongan yang tersedia');
                         }
 
                         return Column(
@@ -170,6 +168,20 @@ class _HomeScreensState extends State<HomeScreens> {
                               tag: item.kategori,
                               logoUrl:
                                   'https://img.icons8.com/fluency/48/company.png',
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => JobDetailPage(
+                                      lowonganId: item.id,
+                                      title: item.posisi,
+                                      company: item.perusahaan,
+                                      logo:
+                                          'https://img.icons8.com/fluency/48/company.png',
+                                    ),
+                                  ),
+                                );
+                              },
                             );
                           }).toList(),
                         );

@@ -70,6 +70,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       fontWeight: FontWeight.w600,
                       fontSize: 16,
                     ),
+                    
                   ),
                   const SizedBox(height: 8),
                   Container(
