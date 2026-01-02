@@ -26,7 +26,7 @@ class _StatusLamaranPageState extends State<StatusLamaranPage> {
     try {
       final String? token = await TokenStorage.getToken();
       if (token == null) {
-        print("User belum login (Token null)");
+        print("User belum login");
         setState(() => _isLoading = false);
         return;
       }
