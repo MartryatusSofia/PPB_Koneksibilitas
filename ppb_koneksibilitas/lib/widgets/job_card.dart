@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import '../screens/job_detail_page.dart';
+
 
 class JobCard extends StatelessWidget {
+  final int lowonganId;
   final String title;
   final String company;
   final String tag;
@@ -9,6 +12,7 @@ class JobCard extends StatelessWidget {
 
   const JobCard({
     super.key,
+    required this.lowonganId,
     required this.title,
     required this.company,
     required this.tag,
@@ -69,7 +73,12 @@ Widget build(BuildContext context) {
           ),
           ElevatedButton(
             onPressed: () {
-              print('');
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => JobDetailPage(lowonganId: lowonganId),
+                ),
+              );
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: primary,

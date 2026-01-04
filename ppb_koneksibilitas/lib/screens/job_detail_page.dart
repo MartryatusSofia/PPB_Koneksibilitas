@@ -2,6 +2,11 @@ import 'package:flutter/material.dart';
 import '../services/lowongan_service.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'lamaran_data_pribadi.dart';
+import 'package:provider/provider.dart';
+import '../providers/saved_job_provider.dart';
+import '../models/saved_job.dart';
+import '../screens/job_detail_page.dart';
+
 
 class JobDetailPage extends StatelessWidget {
   final int lowonganId;
@@ -38,18 +43,14 @@ class JobDetailPage extends StatelessWidget {
             return const Center(child: Text('Data tidak tersedia'));
           }
 
-          final Map<String, dynamic> data = snapshot.data!;
+          final data = snapshot.data!;
 
           final title = data['posisi'] ?? 'Posisi tidak tersedia';
-
           final company =
               data['perusahaan']?['nama'] ?? 'Perusahaan tidak diketahui';
-
           final kategori =
               data['kategori_pekerjaan'] ?? 'Kategori tidak tersedia';
-
           final logo = 'https://img.icons8.com/fluency/48/company.png';
-
           final persyaratan =
               data['persyaratan'] ?? '<p>Belum ada persyaratan</p>';
 
@@ -58,6 +59,7 @@ class JobDetailPage extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                /// HEADER (LOGO + NAMA + BOOKMARK)
                 Row(
                   children: [
                     CircleAvatar(
@@ -82,9 +84,35 @@ class JobDetailPage extends StatelessWidget {
                       ],
                     ),
                     const Spacer(),
-                    const Icon(Icons.bookmark_border),
+                    Consumer<SavedJobProvider>(
+                      builder: (context, savedProvider, _) {
+                        final isSaved =
+                            savedProvider.isSaved(lowonganId);
+
+                        return IconButton(
+                          icon: Icon(
+                            isSaved
+                                ? Icons.bookmark
+                                : Icons.bookmark_border,
+                            color:
+                                isSaved ? Colors.blue : Colors.grey,
+                          ),
+                          onPressed: () {
+                            savedProvider.toggleSave(
+                              SavedJob(
+                                id: lowonganId,
+                                title: title,
+                                company: company,
+                                logo: logo,
+                              ),
+                            );
+                          },
+                        );
+                      },
+                    ),
                   ],
                 ),
+
                 const SizedBox(height: 20),
 
                 const Text(
@@ -108,15 +136,16 @@ class JobDetailPage extends StatelessWidget {
                 ),
 
                 const SizedBox(height: 16),
+
                 const Text(
                   "Persyaratan Lowongan",
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
-
                 const SizedBox(height: 4),
                 Html(data: persyaratan),
 
                 const Spacer(),
+
                 SizedBox(
                   width: double.infinity,
                   height: 50,
@@ -131,13 +160,18 @@ class JobDetailPage extends StatelessWidget {
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF3B82F6),
+                      foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
                     ),
                     child: const Text(
                       "Lamar Pekerjaan",
-                      style: TextStyle(fontSize: 16),
+                      style: TextStyle(
+                      color: Colors.white, // text putih (opsional, tapi aman)
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
                     ),
                   ),
                 ),
