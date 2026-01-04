@@ -165,6 +165,7 @@ class _HomeScreensState extends State<HomeScreens> {
                         return Column(
                           children: lowongan.map((item) {
                             return JobCard(
+                              lowonganId: item.id,
                               title: item.posisi,
                               company: item.perusahaan,
                               tag: item.kategori,
