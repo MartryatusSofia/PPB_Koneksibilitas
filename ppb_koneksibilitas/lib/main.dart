@@ -2,21 +2,24 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'providers/saved_job_provider.dart';
+import 'services/auth_service.dart';
+import 'services/api_service.dart';
 
 import 'views/home_screens.dart';
-import 'screens/saved_jobs_page.dart';
 import 'screens/login_screens.dart';
 import 'screens/register_screens.dart';
-import 'screens/status_lamaran.dart';
+import 'screens/saved_jobs_page.dart';
 import 'screens/profile_page.dart';
+import 'screens/status_lamaran.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await AuthService.bootstrap(); // 🔥 restore token
+
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(
-          create: (_) => SavedJobProvider(),
-        ),
+        ChangeNotifierProvider(create: (_) => SavedJobProvider()),
       ],
       child: const MyApp(),
     ),
@@ -36,17 +39,13 @@ class MyApp extends StatelessWidget {
         scaffoldBackgroundColor: Colors.white,
         fontFamily: 'Inter',
       ),
-
-      // Halaman pertama
-      home: const LoginScreen(),
-
-      // Routes
+      home: ApiService.token == null ? const LoginScreen() : const HomeScreens(),
       routes: {
-        '/home': (context) => const HomeScreens(),
-        '/saved-jobs': (context) => const SavedJobsPage(),
-        '/register': (context) => const RegisterScreen(),
-        '/profile': (context) => const ProfilePage(),
-        '/status-lamaran': (context) => const StatusLamaranPage(),
+        '/home': (_) => const HomeScreens(),
+        '/saved-jobs': (_) => const SavedJobsPage(),
+        '/register': (_) => const RegisterScreen(),
+        '/profile': (_) => const ProfilePage(),
+        '/status-lamaran': (_) => const StatusLamaranPage(),
       },
     );
   }

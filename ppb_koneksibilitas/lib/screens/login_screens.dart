@@ -1,11 +1,9 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-
-import 'register_screens.dart';
-import 'package:ppb_koneksibilitas/views/home_screens.dart';
 import 'package:ppb_koneksibilitas/services/auth_service.dart';
+import 'package:ppb_koneksibilitas/views/home_screens.dart';
+import 'register_screens.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -46,7 +44,6 @@ class _LoginScreenState extends State<LoginScreen> {
               const Text('Masuk sebagai pekerja'),
               const SizedBox(height: 30),
 
-              // EMAIL
               TextField(
                 controller: emailController,
                 decoration: InputDecoration(
@@ -62,7 +59,6 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const SizedBox(height: 15),
 
-              // PASSWORD
               TextField(
                 controller: passwordController,
                 obscureText: _obscureText,
@@ -75,9 +71,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           ? Icons.visibility_off_outlined
                           : Icons.visibility_outlined,
                     ),
-                    onPressed: () {
-                      setState(() => _obscureText = !_obscureText);
-                    },
+                    onPressed: () => setState(() => _obscureText = !_obscureText),
                   ),
                   filled: true,
                   fillColor: Colors.grey.shade100,
@@ -89,14 +83,11 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const SizedBox(height: 10),
 
-              // CHECKBOX
               Row(
                 children: [
                   Checkbox(
                     value: isChecked,
-                    onChanged: (value) {
-                      setState(() => isChecked = value ?? false);
-                    },
+                    onChanged: (value) => setState(() => isChecked = value ?? false),
                   ),
                   const Expanded(
                     child: Text(
@@ -108,7 +99,6 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const SizedBox(height: 20),
 
-              // BUTTON LOGIN
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
@@ -121,26 +111,27 @@ class _LoginScreenState extends State<LoginScreen> {
                     padding: const EdgeInsets.symmetric(vertical: 15),
                   ),
                   child: _isLoading
-                      ? const CircularProgressIndicator(color: Colors.white)
-                      : const Text(
-                          'Sign In',
-                          style: TextStyle(color: Colors.white),
-                        ),
+                      ? const SizedBox(
+                          height: 22,
+                          width: 22,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : const Text('Sign In', style: TextStyle(color: Colors.white)),
                 ),
               ),
 
               const SizedBox(height: 10),
 
-              // REGISTER
               SizedBox(
                 width: double.infinity,
                 child: OutlinedButton(
                   onPressed: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(
-                        builder: (_) => const RegisterScreen(),
-                      ),
+                      MaterialPageRoute(builder: (_) => const RegisterScreen()),
                     );
                   },
                   child: const Text('Sign Up'),
@@ -153,13 +144,11 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  // ================= LOGIN LOGIC (FIXED) =================
+  // ================= LOGIN LOGIC =================
   Future<void> _handleLogin() async {
     if (!isChecked) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Harap setujui ketentuan terlebih dahulu'),
-        ),
+        const SnackBar(content: Text('Harap setujui ketentuan terlebih dahulu')),
       );
       return;
     }
@@ -167,47 +156,23 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final success = await AuthService.login(
+      final ok = await AuthService.login(
         email: emailController.text.trim(),
         password: passwordController.text,
       );
 
-      setState(() => _isLoading = false);
+      if (!ok) throw Exception('Email atau password salah');
 
-      if (success) {
-        /// 🔑 AMBIL USERNAME DARI INPUT EMAIL
-        final email = emailController.text.trim();
-        final username = email.contains('@')
-            ? email.split('@')[0]
-            : email;
-
-        /// 🔑 SIMPAN KE SHARED PREFERENCES
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('user_name', username);
-
-        /// DEBUG
-        debugPrint('USERNAME DISIMPAN: $username');
-
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const HomeScreens()),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            backgroundColor: Colors.red,
-            content: Text('Email atau password salah'),
-          ),
-        );
-      }
-    } catch (e) {
-      setState(() => _isLoading = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          backgroundColor: Colors.red,
-          content: Text(e.toString()),
-        ),
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const HomeScreens()),
       );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(backgroundColor: Colors.red, content: Text(e.toString())),
+      );
+    } finally {
+      setState(() => _isLoading = false);
     }
   }
 }

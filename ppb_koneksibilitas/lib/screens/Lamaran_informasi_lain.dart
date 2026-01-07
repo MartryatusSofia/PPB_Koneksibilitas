@@ -1,235 +1,263 @@
 import 'package:flutter/material.dart';
+import 'package:file_picker/file_picker.dart';
+import 'dart:io';
+import 'package:flutter/foundation.dart';
+import '../services/api_service.dart';
 import 'package:ppb_koneksibilitas/views/home_screens.dart';
 
 class InformasiLainPage extends StatefulWidget {
-  const InformasiLainPage({super.key});
+  final int applicationId;
+  final int lowonganId;
+  const InformasiLainPage({Key? key, required this.applicationId, required this.lowonganId}) : super(key: key);
 
   @override
   State<InformasiLainPage> createState() => _InformasiLainPageState();
 }
 
 class _InformasiLainPageState extends State<InformasiLainPage> {
-  final TextEditingController alatBantuController = TextEditingController();
+  final alatBantuController = TextEditingController();
   String? jenisDisabilitas;
-  bool fileUploaded = false;
 
-  Widget labelWajib(String text) {
-    return Row(
-      children: [
-        Text(text, style: const TextStyle(fontWeight: FontWeight.w600)),
-        const Text(' *', style: TextStyle(color: Colors.red)),
-      ],
+  PlatformFile? cvFile;
+  PlatformFile? portofolioFile;
+  List<PlatformFile> additionalFiles = [];
+
+  Future<void> pickCv() async {
+    final res = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['pdf', 'doc', 'docx'],
+      withData: true,
     );
+    if (res != null && res.files.isNotEmpty) {
+      setState(() => cvFile = res.files.first);
+    }
   }
 
-  InputDecoration inputStyle(String hint) {
-    return InputDecoration(
-      hintText: hint,
-      filled: true,
-      fillColor: Colors.white,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: const BorderSide(color: Color(0xFFDADADA), width: 1.2),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: const BorderSide(color: Color(0xFFDADADA), width: 1.2),
-      ),
+  Future<void> pickPortofolio() async {
+    final res = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['pdf', 'zip', 'jpg', 'png'],
+      withData: true,
     );
+    if (res != null && res.files.isNotEmpty) {
+      setState(() => portofolioFile = res.files.first);
+    }
   }
+
+  Future<void> pickAdditional() async {
+    final res = await FilePicker.platform.pickFiles(
+      allowMultiple: true,
+      withData: true,
+    );
+    if (res != null && res.files.isNotEmpty) {
+      setState(() => additionalFiles = res.files);
+    }
+  }
+
+  Widget label(String t, {bool required = true}) => Row(children: [
+        Text(t, style: const TextStyle(fontWeight: FontWeight.w600)),
+        if (required) const Text(" *", style: TextStyle(color: Colors.red))
+      ]);
+
+  InputDecoration inputStyle(String hint) => InputDecoration(
+        hintText: hint,
+        filled: true,
+        fillColor: Colors.white,
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+        enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+            borderSide: const BorderSide(color: Color(0xFFDADADA))),
+        focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+            borderSide: const BorderSide(color: Color(0xFF0D80F2))),
+      );
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF3F6FB),
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        title: const Text(
-          'Lamar Pekerjaan',
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.w600),
-        ),
-        centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
+          backgroundColor: Colors.white,
+          elevation: 0,
+          centerTitle: true,
+          title: const Text('Lamar Pekerjaan',
+              style:
+                  TextStyle(color: Colors.black, fontWeight: FontWeight.w600))),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Center(
-              child: Column(
-                children: [
-                  Text(
-                    'Step 3',
-                    style: TextStyle(
-                      color: Colors.blue,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  SizedBox(height: 4),
-                  Text(
-                    'Informasi Lain',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.black,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 24),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          const Center(
+              child: Column(children: [
+            Text("Step 3",
+                style: TextStyle(
+                    color: Color(0xFF0D80F2), fontWeight: FontWeight.bold)),
+            SizedBox(height: 4),
+            Text("Informasi Lain",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600))
+          ])),
+          const SizedBox(height: 30),
 
+          label("Jenis Disabilitas"),
+          const SizedBox(height: 6),
+          Wrap(
+            spacing: 24,
+            children: ["Tuna Rungu / Tuna Wicara", "Lainnya"]
+                .map((e) => Row(mainAxisSize: MainAxisSize.min, children: [
+                      Radio<String>(
+                          value: e,
+                          groupValue: jenisDisabilitas,
+                          onChanged: (v) =>
+                              setState(() => jenisDisabilitas = v)),
+                      Text(e)
+                    ]))
+                .toList(),
+          ),
+          const SizedBox(height: 18),
 
-            labelWajib("Jenis Disabilitas"),
-            const SizedBox(height: 6),
-            Row(
-              children: [
-                Radio<String>(
-                  value: 'Tuna Wicara',
-                  groupValue: jenisDisabilitas,
-                  activeColor: Colors.blue,
-                  onChanged: (val) {
-                    setState(() {
-                      jenisDisabilitas = val;
-                    });
-                  },
-                ),
-                const Text('Tuna Wicara'),
-                const SizedBox(width: 24),
-                Radio<String>(
-                  value: 'Tuna Rungu',
-                  groupValue: jenisDisabilitas,
-                  activeColor: Colors.blue,
-                  onChanged: (val) {
-                    setState(() {
-                      jenisDisabilitas = val;
-                    });
-                  },
-                ),
-                const Text('Tuna Rungu'),
-                const SizedBox(width: 24),
-                Radio<String>(
-                  value: 'Lainnya',
-                  groupValue: jenisDisabilitas,
-                  activeColor: Colors.blue,
-                  onChanged: (val) {
-                    setState(() {
-                      jenisDisabilitas = val;
-                    });
-                  },
-                ),
-                const Text('Lainnya'),
-              ],
-            ),
-            const SizedBox(height: 18),
-
-            labelWajib("Alat Bantu yang Digunakan"),
+            label("Alat Bantu", required: false),
             const SizedBox(height: 6),
             TextField(
               controller: alatBantuController,
-              decoration: inputStyle("Masukkan alat bantu (jika tidak ada ketik - )"),
-            ),
+              decoration: inputStyle("Contoh: Alat bantu dengar")),
             const SizedBox(height: 18),
 
-            labelWajib("Unggah Dokumen"),
+            // CV
+            const Text('CV *', style: TextStyle(fontWeight: FontWeight.w600)),
             const SizedBox(height: 6),
-            const Text(
-              '(Unggah dokumen pendukung seperti CV, portofolio, atau dokumen lainnya.)',
-              style: TextStyle(fontSize: 12, color: Colors.black54),
-            ),
-            const SizedBox(height: 6),
-            GestureDetector(
-              onTap: () {
-                setState(() {
-                  fileUploaded = true;
-                });
-              },
-              child: Container(
-                width: double.infinity,
-                height: 100,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: fileUploaded ? Colors.blue : Colors.grey.shade400,
-                  ),
-                ),
-                child: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.upload_file,
-                        color: fileUploaded ? Colors.blue : Colors.grey,
-                        size: 32,
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        fileUploaded
-                            ? "File berhasil diunggah"
-                            : "Upload file",
-                        style: TextStyle(
-                          color: fileUploaded ? Colors.blue : Colors.grey,
-                        ),
-                      ),
-                    ],
-                  ),
+            Row(children: [
+              OutlinedButton.icon(
+                onPressed: pickCv,
+                icon: const Icon(Icons.upload_file, color: Color(0xFF6D28D9)),
+                label: const Text('Choose File', style: TextStyle(color: Color(0xFF6D28D9))),
+                style: OutlinedButton.styleFrom(
+                  backgroundColor: const Color(0xFFF5F3FF),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                 ),
               ),
-            ),
-            const SizedBox(height: 30),
+              const SizedBox(width: 12),
+              Expanded(
+                  child: Text(cvFile?.name ?? 'No file chosen',
+                      style: const TextStyle(color: Colors.black54))),
+            ]),
+            const SizedBox(height: 18),
 
-            // Tombol Selesai
-            SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: ElevatedButton(
-                onPressed: () {
-                  if (jenisDisabilitas == null ||
-                      alatBantuController.text.isEmpty ||
-                      !fileUploaded) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Lengkapi semua data wajib terlebih dahulu.'),
-                      ),
-                    );
-                    return;
-                  }
+            // Portofolio
+            const Text('Portofolio', style: TextStyle(fontWeight: FontWeight.w600)),
+            const SizedBox(height: 6),
+            Row(children: [
+              OutlinedButton.icon(
+                onPressed: pickPortofolio,
+                icon: const Icon(Icons.upload_file, color: Color(0xFF6D28D9)),
+                label: const Text('Choose File', style: TextStyle(color: Color(0xFF6D28D9))),
+                style: OutlinedButton.styleFrom(
+                  backgroundColor: const Color(0xFFF5F3FF),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                  child: Text(portofolioFile?.name ?? 'No file chosen',
+                      style: const TextStyle(color: Colors.black54))),
+            ]),
+            const SizedBox(height: 18),
 
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Data berhasil disimpan!'),
-                    ),
-                  );
+            // Additional documents
+            const Text('Dokumen Tambahan', style: TextStyle(fontWeight: FontWeight.w600)),
+            const SizedBox(height: 6),
+            Row(children: [
+              OutlinedButton.icon(
+                onPressed: pickAdditional,
+                icon: const Icon(Icons.upload_file, color: Color(0xFF6D28D9)),
+                label: const Text('Choose Files', style: TextStyle(color: Color(0xFF6D28D9))),
+                style: OutlinedButton.styleFrom(
+                  backgroundColor: const Color(0xFFF5F3FF),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                  child: Text(
+                      additionalFiles.isNotEmpty
+                          ? additionalFiles.map((f) => f.name).join(', ')
+                          : 'No file chosen',
+                      style: const TextStyle(color: Colors.black54))),
+            ]),
+          const SizedBox(height: 30),
 
-                  // Setelah 1 detik, kembali ke beranda
-                  Future.delayed(const Duration(seconds: 1), () {
-                    Navigator.pushAndRemoveUntil(
-                      context,
-                      MaterialPageRoute(builder: (context) => const HomeScreens()),
-                      (route) => false,
-                    );
-                  });
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
+          SizedBox(
+            width: double.infinity,
+            height: 50,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF0D80F2),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                ),
-                child: const Text(
-                  'Selesai',
-                  style: TextStyle(color: Colors.white, fontSize: 16),
-                ),
-              ),
+                      borderRadius: BorderRadius.circular(30))),
+              child: const Text("Selesai",
+                  style: TextStyle(color: Colors.white, fontSize: 16)),
+              onPressed: () async {
+                if (jenisDisabilitas == null) {
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                      content: Text("Pilih jenis disabilitas")));
+                  return;
+                }
+
+                // build fields
+                final fields = <String, String>{
+                  "application_id": widget.applicationId.toString(),
+                  "lowongan_id": widget.lowonganId.toString(),
+                  "assistive_tools": alatBantuController.text,
+                  if (jenisDisabilitas != null) "jenis_disabilitas": jenisDisabilitas!,
+                };
+
+                // build files map for multipart
+                final files = <String, dynamic>{};
+
+                if (cvFile != null) {
+                  if (kIsWeb) {
+                    files['cv'] = {'bytes': cvFile!.bytes!, 'name': cvFile!.name};
+                  } else if (cvFile!.path != null) {
+                    files['cv'] = File(cvFile!.path!);
+                  }
+                }
+
+                if (portofolioFile != null) {
+                  if (kIsWeb) {
+                    files['portofolio'] = {'bytes': portofolioFile!.bytes!, 'name': portofolioFile!.name};
+                  } else if (portofolioFile!.path != null) {
+                    files['portofolio'] = File(portofolioFile!.path!);
+                  }
+                }
+
+                if (additionalFiles.isNotEmpty) {
+                  if (kIsWeb) {
+                    files['resume'] = additionalFiles
+                        .map((f) => {'bytes': f.bytes!, 'name': f.name})
+                        .toList();
+                  } else {
+                    files['resume'] = additionalFiles
+                        .where((f) => f.path != null)
+                        .map((f) => File(f.path!))
+                        .toList();
+                  }
+                }
+
+                await ApiService.postMultipart(
+                  "mobile/lamaran/step3",
+                  token: ApiService.token,
+                  fields: fields,
+                  files: files.isEmpty ? null : files,
+                );
+
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (_) => const HomeScreens()),
+                  (_) => false,
+                );
+              },
             ),
-          ],
-        ),
+          )
+        ]),
       ),
     );
   }
