@@ -15,7 +15,6 @@ class ApiService {
     _token = token;
   }
 
-  // ================= HEADERS =================
   static Map<String, String> _headers({String? token}) {
     final t = token ?? _token;
     return {
@@ -24,8 +23,6 @@ class ApiService {
       if (t != null && t.isNotEmpty) 'Authorization': 'Bearer $t',
     };
   }
-
-  // ================= GET =================
   static Future<Map<String, dynamic>> get(
     String endpoint, {
     String? token,
@@ -35,8 +32,6 @@ class ApiService {
     final res = await http.get(uri, headers: _headers(token: token));
     return _decode(res);
   }
-
-  // ================= POST =================
   static Future<Map<String, dynamic>> post(
     String endpoint, {
     Map<String, dynamic>? body,
@@ -49,8 +44,6 @@ class ApiService {
     );
     return _decode(res);
   }
-
-  // ================= MULTIPART =================
   static Future<Map<String, dynamic>> postMultipart(
     String endpoint, {
     required Map<String, String> fields,
@@ -98,18 +91,14 @@ class ApiService {
         }
       }
     }
-
     final streamed = await request.send();
     final response = await http.Response.fromStream(streamed);
     return _decode(response);
   }
-
-  // ================= JSON HANDLER =================
   static Map<String, dynamic> _decode(http.Response res) {
     final data = jsonDecode(res.body);
     if (res.statusCode >= 200 && res.statusCode < 300 && data is Map<String, dynamic>) {
-      return data;
-    }
+      return data;}
     throw Exception(data['message'] ?? 'API Error');
   }
 }

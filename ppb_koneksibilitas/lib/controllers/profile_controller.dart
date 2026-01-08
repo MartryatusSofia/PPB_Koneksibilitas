@@ -4,7 +4,6 @@ import '../services/profile_service.dart';
 
 class ProfileController {
   
-  // 1. List Skill Manual (Agar cepat & tidak loading)
   final List<String> manualSkills = [
     'Design Grafis',
     'Mobile Developer',
@@ -29,9 +28,6 @@ class ProfileController {
     }
     return null;
   }
-
-  // (Fungsi fetchMasterSkills Dihapus karena kita pakai manualSkills di atas)
-
   Future<bool> updateData({
     String? name,
     String? subtitle,

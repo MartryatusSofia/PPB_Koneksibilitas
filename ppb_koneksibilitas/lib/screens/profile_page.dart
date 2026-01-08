@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:url_launcher/url_launcher.dart'; // Import ini untuk tombol mata
-import '../controllers/profile_controller.dart';
-import '../models/profile_model.dart';
-import '../widgets/app_bottom_nav.dart';
+import 'package:url_launcher/url_launcher.dart'; 
+import 'package:ppb_koneksibilitas/controllers/profile_controller.dart';
+import 'package:ppb_koneksibilitas/models/profile_model.dart';
+import 'package:ppb_koneksibilitas/widgets/app_bottom_nav.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -16,9 +16,8 @@ class _ProfilePageState extends State<ProfilePage> {
   final ProfileController _controller = ProfileController();
   UserProfile? _profile;
   bool _isLoading = true;
-  int _imageKey = 0; // Cache buster untuk gambar
+  int _imageKey = 0; 
 
-  // Controllers Edit Text
   final _nameCtrl = TextEditingController();
   final _subtitleCtrl = TextEditingController();
   final _aboutCtrl = TextEditingController();
@@ -45,7 +44,6 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
-  // === FUNGSI MEMBUKA URL (TOMBOL MATA) ===
   Future<void> _openFileUrl(String? url) async {
     if (url != null && url.isNotEmpty) {
       final uri = Uri.parse(url);
@@ -59,7 +57,6 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
-  // === PICKERS ===
   Future<void> _pickAvatar() async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.image,
@@ -85,7 +82,6 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
-  // === UPLOAD ===
   Future<void> _uploadFile({PlatformFile? avatar, PlatformFile? cv, PlatformFile? portfolio, String type = ""}) async {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Mengupload $type...")));
@@ -95,9 +91,7 @@ class _ProfilePageState extends State<ProfilePage> {
       cv: cv,
       portfolio: portfolio,
     );
-
     if (!mounted) return;
-
     if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Berhasil mengubah $type!"), backgroundColor: Colors.green)
@@ -110,11 +104,8 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
-  // === DIALOG EDIT (Manual Skill) ===
   void _showEditDialog() {
     if (_profile == null) return;
-    
-    // 1. Ambil skill manual dari Controller (INSTAN, tidak pakai await)
     List<String> masterSkills = _controller.manualSkills;
     List<String> selectedSkills = List.from(_profile!.skills);
 
@@ -139,8 +130,6 @@ class _ProfilePageState extends State<ProfilePage> {
                       child: Text("Pilih Keterampilan:", style: TextStyle(fontWeight: FontWeight.bold))
                     ),
                     const SizedBox(height: 8),
-                    
-                    // 2. Tampilkan langsung (Tanpa Loading)
                     Wrap(
                       spacing: 8,
                       runSpacing: 8,
@@ -204,10 +193,9 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget build(BuildContext context) {
     if (_isLoading) return const Scaffold(body: Center(child: CircularProgressIndicator()));
 
-    // Logic Avatar
     String? avatarUrl = _profile?.avatarUrl;
     if (avatarUrl != null && avatarUrl.isNotEmpty) {
-      avatarUrl = "$avatarUrl?v=$_imageKey"; // Cache buster
+      avatarUrl = "$avatarUrl?v=$_imageKey";
     }
     final hasAvatar = avatarUrl != null && avatarUrl.isNotEmpty;
 
@@ -228,7 +216,6 @@ class _ProfilePageState extends State<ProfilePage> {
         child: Column(
           children: [
             const SizedBox(height: 16),
-            // === AVATAR ===
             GestureDetector(
               onTap: _pickAvatar,
               child: Stack(
@@ -236,7 +223,6 @@ class _ProfilePageState extends State<ProfilePage> {
                   CircleAvatar(
                     radius: 50,
                     backgroundColor: Colors.grey[200],
-                    // Cek avatar URL
                     backgroundImage: hasAvatar ? NetworkImage(avatarUrl!) : null,
                     child: !hasAvatar 
                       ? const Icon(Icons.person, size: 50, color: Colors.grey)
@@ -263,8 +249,6 @@ class _ProfilePageState extends State<ProfilePage> {
               style: const TextStyle(color: Colors.grey)
             ),
             const SizedBox(height: 20),
-
-            // === ABOUT ===
             Container(
               margin: const EdgeInsets.symmetric(horizontal: 20),
               padding: const EdgeInsets.all(16),
@@ -283,8 +267,6 @@ class _ProfilePageState extends State<ProfilePage> {
               ),
             ),
             const SizedBox(height: 20),
-
-            // === SKILLS ===
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Align(alignment: Alignment.centerLeft, child: Text("Keterampilan", style: TextStyle(fontWeight: FontWeight.bold))),
@@ -305,13 +287,11 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
             const SizedBox(height: 20),
 
-            // === DOKUMEN (Dengan Tombol Mata) ===
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Align(alignment: Alignment.centerLeft, child: Text("Dokumen", style: TextStyle(fontWeight: FontWeight.bold))),
             ),
             const SizedBox(height: 10),
-            // Kirim URL ke widget _buildDocItem
             _buildDocItem("CV", _profile?.cvUrl, () => _pickDocument('cv')),
             _buildDocItem("Portofolio", _profile?.portfolioUrl, () => _pickDocument('portfolio')),
             const SizedBox(height: 40),
@@ -322,7 +302,6 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  // 3. Update Widget Doc Item dengan Tombol Mata
   Widget _buildDocItem(String title, String? url, VoidCallback onUploadTap) {
     bool hasFile = url != null && url.isNotEmpty;
     
@@ -348,15 +327,13 @@ class _ProfilePageState extends State<ProfilePage> {
             )
           ),
           
-          // --- TOMBOL MATA (VIEW) ---
           if (hasFile)
             IconButton(
               icon: const Icon(Icons.remove_red_eye, color: Colors.blue),
               tooltip: "Lihat File",
-              onPressed: () => _openFileUrl(url), // Buka URL di browser
+              onPressed: () => _openFileUrl(url),
             ),
 
-          // Tombol Upload/Ganti
           GestureDetector(
             onTap: onUploadTap,
             child: Text(
